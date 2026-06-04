@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockCell Pro - Gestión de Inventario</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: #f4f6f9;
+        }
+
+        header {
+            background: #5b21b6;
+            color: white;
+            padding: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, .2);
+        }
+
+        .section {
+            background: white;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .1);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+        }
+
+        .red { background: #dc2626; }
+        .green { background: #16a34a; }
+        .blue { background: #2563eb; }
+        .purple { background: #7c3aed; }
+
+        .card h3 {
+            margin-bottom: 10px;
+        }
+
+        .card h1 {
+            font-size: 35px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            background: #5b21b6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        button:hover {
+            background: #7c3aed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th {
+            background: #5b21b6;
+            color: white;
+        }
+
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        img {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+        }
+
+        .stock-bajo {
+            color: red;
+            font-weight: bold;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>📱 STOCKCELL PRO</h1>
+        <nav>
+            <a href="#inicio">Inicio</a>
+            <a href="#ingreso">Registrar Ingreso</a>
+            <a href="#ventas">Registrar Venta</a>
+            <a href="#stock">Consultar Stock</a>
+            <a href="#reportes">Reportes</a>
+        </nav>
+    </header>
+
+    <section id="inicio" class="section">
+        <h2>Panel Principal</h2>
+        <div class="dashboard">
+            <div class="card red">
+                <h3>Stock Bajo</h3>
+                <h1 id="stockBajo">0</h1>
+            </div>
+            <div class="card green">
+                <h3>Producto Más Vendido</h3>
+                <h1 id="masVendido">-</h1>
+            </div>
+            <div class="card blue">
+                <h3>Total Productos</h3>
+                <h1 id="totalProductos">0</h1>
+            </div>
+            <div class="card purple">
+                <h3>Movimientos del Día</h3>
+                <h1 id="movimientosDia">0</h1>
+            </div>
+        </div>
+    </section>
+
+    <section id="ingreso" class="section">
+        <h2>Registrar Ingreso</h2>
+        <select id="marca">
+            <option>Samsung</option>
+            <option>Xiaomi</option>
+            <option>iPhone</option>
+            <option>Motorola</option>
+            <option>Honor</option>
+            <option>Realme</option>
+        </select>
+        <input type="text" id="modelo" placeholder="Modelo">
+        <input type="number" id="cantidad" placeholder="Cantidad que ingresa">
+        <input type="number" id="precio" placeholder="Precio de compra">
+        <button onclick="registrarIngreso()">GUARDAR</button>
+    </section>
+
+    <section id="ventas" class="section">
+        <h2>Registrar Venta</h2>
+        <input type="text" id="buscarVenta" placeholder="Buscar marca o modelo" onkeyup="buscarProducto()">
+        <div id="resultadoBusqueda"></div>
+        <input type="number" id="cantidadVenta" placeholder="Cantidad vendida">
+        <button onclick="registrarVenta()">VENDER</button>
+    </section>
+
+    <section id="stock" class="section">
+        <h2>Consultar Stock</h2>
+        <input type="text" id="buscarStock" placeholder="Buscar producto" onkeyup="mostrarStock()">
+        <table>
+            <thead>
+                <tr>
+                    <th>Foto</th>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody id="tablaStock"></tbody>
+        </table>
+    </section>
+
+    <section id="reportes" class="section">
+        <h2>Reportes</h2>
+        <div class="grid">
+            <button onclick="alert('Reporte Diario Generado')">Ventas del Día</button>
+            <button onclick="alert('Reporte Semanal Generado')">Ventas de la Semana</button>
+            <button onclick="alert('Reporte Mensual Generado')">Ventas del Mes</button>
+            <button onclick="window.print()">Imprimir / Guardar PDF</button>
+        </div>
+
+        <h2 style="margin-top:20px">Historial de Ventas</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                </tr>
+            </thead>
+            <tbody id="tablaVentas"></tbody>
+        </table>
+    </section>
+
+    <script>
+        let productos = JSON.parse(localStorage.getItem("productos")) || [];
+        let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+        let productoSeleccionado = null;
+
+        function guardarDatos() {
+            localStorage.setItem("productos", JSON.stringify(productos));
+            localStorage.setItem("ventas", JSON.stringify(ventas));
+        }
+
+        function registrarIngreso() {
+            let marca = document.getElementById("marca").value;
+            let modelo = document.getElementById("modelo").value;
+            let cantidad = parseInt(document.getElementById("cantidad").value);
+            let precio = document.getElementById("precio").value;
+
+            if (!modelo || !cantidad || !precio) {
+                alert("Complete todos los campos");
+                return;
+            }
+
+            let producto = {
+                id: Date.now(),
+                marca: marca,
+                modelo: modelo,
+                cantidad: cantidad,
+                precio: precio,
+                foto: "https://via.placeholder.com/60?text=📱"
+            };
+
+            productos.push(producto);
+            guardarDatos();
+            mostrarStock();
+            actualizarDashboard();
+            
+            alert("Ingreso registrado correctamente");
+            
+            // Limpiar campos
+            document.getElementById("modelo").value = "";
+            document.getElementById("cantidad").value = "";
+            document.getElementById("precio").value = "";
+        }
+
+        function mostrarStock() {
+            let filtro = document.getElementById("buscarStock").value.toLowerCase();
+            let tabla = document.getElementById("tablaStock");
+            tabla.innerHTML = "";
+
+            productos
+                .filter(p => (p.marca + p.modelo).toLowerCase().includes(filtro))
+                .forEach(p => {
+                    let estado = p.cantidad <= 5 ? "<span class='stock-bajo'>Stock Bajo</span>" : "Disponible";
+                    
+                    tabla.innerHTML += `
+                        <tr>
+                            <td><img src="${p.foto}"></td>
+                            <td>${p.marca}</td>
+                            <td>${p.modelo}</td>
+                            <td>S/ ${p.precio}</td>
+                            <td>${p.cantidad}</td>
+                            <td>${estado}</td>
+                        </tr>
+                    `;
+                });
+        }
+
+        function buscarProducto() {
+            let texto = document.getElementById("buscarVenta").value.toLowerCase();
+            let encontrado = productos.find(p => (p.marca + p.modelo).toLowerCase().includes(texto));
+
+            if (encontrado) {
+                productoSeleccionado = encontrado;
+                document.getElementById("resultadoBusqueda").innerHTML = `
+                    <p>
+                        <b>${encontrado.marca} ${encontrado.modelo}</b>
+                        <br>Stock Disponible: ${encontrado.cantidad}
+                    </p>
+                `;
+            } else {
+                document.getElementById("resultadoBusqueda").innerHTML = "";
+                productoSeleccionado = null;
+            }
+        }
+
+        function registrarVenta() {
+            if (!productoSeleccionado) {
+                alert("Busque un producto");
+                return;
+            }
+
+            let cantidad = parseInt(document.getElementById("cantidadVenta").value);
+
+            if (cantidad > productoSeleccionado.cantidad) {
+                alert("Stock insuficiente");
+                return;
+            }
+
+            // Restar cantidad del stock
+            productoSeleccionado.cantidad -= cantidad;
+
+            // Guardar venta en historial
+            ventas.push({
+                fecha: new Date().toLocaleString(),
+                producto: productoSeleccionado.marca + " " + productoSeleccionado.modelo,
+                cantidad: cantidad
+            });
+
+            guardarDatos();
+            mostrarVentas();
+            mostrarStock();
+            actualizarDashboard();
+            
+            alert("Venta registrada correctamente");
+            
+            // Limpiar campo
+            document.getElementById("cantidadVenta").value = "";
+        }
+
+        function mostrarVentas() {
+            let tabla = document.getElementById("tablaVentas");
+            tabla.innerHTML = "";
+
+            ventas.forEach(v => {
+                tabla.innerHTML += `
+                    <tr>
+                        <td>${v.fecha}</td>
+                        <td>${v.producto}</td>
+                        <td>${v.cantidad}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function actualizarDashboard() {
+            document.getElementById("totalProductos").textContent = productos.length;
+            document.getElementById("stockBajo").textContent = productos.filter(p => p.cantidad <= 5).length;
+            document.getElementById("movimientosDia").textContent = ventas.length;
+
+            // Calcular producto más vendido
+            let contador = {};
+            ventas.forEach(v => {
+                contador[v.producto] = (contador[v.producto] || 0) + v.cantidad;
+            });
+
+            let top = "-";
+            let max = 0;
+            for (let producto in contador) {
+                if (contador[producto] > max) {
+                    max = contador[producto];
+                    top = producto;
+                }
+            }
+            
+            document.getElementById("masVendido").textContent = top;
+        }
+
+        // Inicializar todo al cargar
+        mostrarStock();
+        mostrarVentas();
+        actualizarDashboard();
+    </script>
+</body>
+</html>
